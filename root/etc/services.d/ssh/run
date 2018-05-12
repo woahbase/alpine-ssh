@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+/usr/sbin/sshd -Dd -e4 -f /etc/ssh/sshd_config;
+

@@ -1,0 +1,31 @@
+ARG ARCH=frommakefile
+ARG DOCKERSRC=frommakefile
+ARG USERNAME=frommakefile
+#
+FROM ${USERNAME}/${DOCKERSRC}:${ARCH}
+#
+ARG PUID=1001
+ARG PGID=1001
+ENV CNTUSER=alpine \
+    CNTPASS=insecurebydefault \
+    CNTHOME=/home/alpine
+#
+RUN set -xe \
+#   && echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
+#   && echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+    && apk add --no-cache --purge -uU \
+        curl \
+        git \
+        openssl \
+        openssh \
+        rsync \
+    && rm -rf /var/cache/apk/* /tmp/*
+#
+COPY root/ /
+#
+VOLUME /home/${CNTUSER}/ /etc/ssh/
+#
+EXPOSE 64822
+#
+ENTRYPOINT ["/init"]
+# ENTRYPOINT ["/bin/bash"]
