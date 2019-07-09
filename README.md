@@ -1,23 +1,26 @@
-[![build status][251]][232] [![commit][255]][231] [![version:x86_64][256]][235] [![size:x86_64][257]][235] [![version:armhf][258]][236] [![size:armhf][259]][236]
+[![build status][251]][232] [![commit][255]][231] [![version:x86_64][256]][235] [![size:x86_64][257]][235] [![version:armhf][258]][236] [![size:armhf][259]][236] [![version:armv7l][260]][237] [![size:armv7l][261]][237] [![version:aarch64][262]][238] [![size:aarch64][263]][238]
 
 ## [Alpine-SSH][234]
 #### Container for Alpine Linux + S6 + SSH/RSync
 ---
 
 This [image][233] serves as the base image for applications
-/ services that require running an isolated shell via [OpenSSH][135]
-server. Also includes `curl`, [openssl][137], `git`, and [rsync][136].
+/ services that require running an isolated shell via
+[OpenSSH][135] server. Also includes `curl`, [openssl][137],
+`git`, [rsync][136], [autossh][138] and [sshfs][139] .
 
 Based on [Alpine Linux][131] from my [alpine-s6][132] image with
 the [s6][133] init system [overlayed][134] in it.
 
 The image is tagged respectively for the following architectures,
 * **armhf**
+* **armv7l**
+* **aarch64**
 * **x86_64** (retagged as the `latest` )
 
-**armhf** builds have embedded binfmt_misc support and contain the
+**non-x86_64** builds have embedded binfmt_misc support and contain the
 [qemu-user-static][105] binary that allows for running it also inside
-an x64 environment that has it.
+an x86_64 environment that has it.
 
 ---
 #### Get the Image
@@ -107,14 +110,14 @@ docker restart docker_ssh
 Get a shell inside a already running container,
 
 ```
-# make shell
+# make debug
 docker exec -it docker_ssh /bin/bash
 ```
 
 set user or login as root,
 
 ```
-# make rshell
+# make rdebug
 docker exec -u root -it docker_ssh /bin/bash
 ```
 
@@ -164,11 +167,9 @@ for other architectures.]
 docker build --rm --compress --force-rm \
   --no-cache=true --pull \
   -f ./Dockerfile_x86_64 \
-  --build-arg ARCH=x86_64 \
-  --build-arg DOCKERSRC=alpine-s6 \
+  --build-arg DOCKERSRC=woahbase/alpine-s6:x86_64 \
   --build-arg PGID=1000 \
   --build-arg PUID=1000 \
-  --build-arg USERNAME=woahbase \
   -t woahbase/alpine-ssh:x86_64 \
   .
 ```
@@ -217,6 +218,8 @@ Maintained by [WOAHBase][204].
 [135]: https://www.openssh.com/
 [136]: https://www.samba.org/rsync/
 [137]: https://www.openssl.org/
+[138]: https://linux.die.net/man/1/autossh
+[139]: https://github.com/libfuse/sshfs
 
 [201]: https://github.com/woahbase
 [202]: https://travis-ci.org/woahbase/
@@ -229,6 +232,8 @@ Maintained by [WOAHBase][204].
 [234]: https://woahbase.online/#/images/alpine-ssh
 [235]: https://microbadger.com/images/woahbase/alpine-ssh:x86_64
 [236]: https://microbadger.com/images/woahbase/alpine-ssh:armhf
+[237]: https://microbadger.com/images/woahbase/alpine-ssh:armv7l
+[238]: https://microbadger.com/images/woahbase/alpine-ssh:aarch64
 
 [251]: https://travis-ci.org/woahbase/alpine-ssh.svg?branch=master
 
@@ -239,3 +244,9 @@ Maintained by [WOAHBase][204].
 
 [258]: https://images.microbadger.com/badges/version/woahbase/alpine-ssh:armhf.svg
 [259]: https://images.microbadger.com/badges/image/woahbase/alpine-ssh:armhf.svg
+
+[260]: https://images.microbadger.com/badges/version/woahbase/alpine-ssh:armv7l.svg
+[261]: https://images.microbadger.com/badges/image/woahbase/alpine-ssh:armv7l.svg
+
+[262]: https://images.microbadger.com/badges/version/woahbase/alpine-ssh:aarch64.svg
+[263]: https://images.microbadger.com/badges/image/woahbase/alpine-ssh:aarch64.svg
