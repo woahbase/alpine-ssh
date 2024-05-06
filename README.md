@@ -6,8 +6,8 @@
 
 This [image][233] serves as the base image for applications
 / services that require running an isolated shell via
-[OpenSSH][135] server. Also includes `curl`, [openssl][137],
-`git`, [rsync][136], [autossh][138] and [sshfs][139] .
+[OpenSSH][135] server. Also includes [openssl][137], [rsync][136],
+[autossh][138] and [sshfs][139] .
 
 Based on [Alpine Linux][131] from my [alpine-s6][132] image with
 the [s6][133] init system [overlayed][134] in it.
@@ -60,16 +60,16 @@ Running `make` gets a shell.
 
 ```
 # make
-docker run --rm -it \
+docker run --rm \
   --name docker_ssh --hostname ssh \
   -c 128 -m 256m \
   -e PGID=1000 -e PUID=1000 \
   -p 64822:64822 \
-  -v data:/home/alpine \
+  -v data/user:/home/alpine \
   -v data/host:/etc/ssh \
-  -e CNTUSER=alpine \
-  -e CNTPASS=insecurebydefault \
-  -e ROOTPASS=insecurebydefaultroot \
+  -e S6_USER=alpine \
+  -e S6_USERPASS=insecurebydefault \
+  -e S6_ROOTPASS=insecurebydefaultroot \
   woahbase/alpine-ssh:x86_64 \
   /bin/bash
 ```

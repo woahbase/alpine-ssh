@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+set -e
+
+# bring your own custom autossh script
+echo "Nothing to do for AutoSSH.";

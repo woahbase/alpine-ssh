@@ -1,0 +1,80 @@
+#!/usr/bin/with-contenv bash
+set -e
+
+SSHD_CONFDIR="${SSHD_CONFDIR:-/etc/ssh}";
+
+# make sure configs exist
+if [ ! -f "${SSHD_CONFDIR}/ssh_config"  ]; then cp /defaults/ssh_config  ${SSHD_CONFDIR}/; fi;
+if [ ! -f "${SSHD_CONFDIR}/sshd_config" ]; then cp /defaults/sshd_config ${SSHD_CONFDIR}/; fi;
+
+# generate host keys, bind mount ${SSHD_CONFDIR} to somewhere local if you need to preserve them
+if [ ! -f "${SSHD_CONFDIR}/ssh_host_rsa_key"  ];
+then
+    echo "SSHd Generating host keys.";
+    ssh-keygen -t rsa     -b 1024 -N "" -f ${SSHD_CONFDIR}/ssh_host_rsa_key;
+    ssh-keygen -t dsa     -b 1024 -N "" -f ${SSHD_CONFDIR}/ssh_host_dsa_key;
+    ssh-keygen -t ecdsa   -b 521  -N "" -f ${SSHD_CONFDIR}/ssh_host_ecdsa_key;
+    ssh-keygen -t ed25519 -b 512  -N "" -f ${SSHD_CONFDIR}/ssh_host_ed25519_key;
+fi;
+
+# set sshd configuration from environment vars i.e. /run/s6/container_environment/SSHD__<varname>
+if find /run/s6/container_environment/SSHD__* -maxdepth 1 > /dev/null 2>&1; then
+    for FILENAME in /run/s6/container_environment/*;
+    do
+        if [[ "${FILENAME##*/}" == "SSHD__"* ]];
+        then
+            BASENAME="${FILENAME##*/}";
+            VAR=${BASENAME//SSHD__/};
+            VAL="$(cat ${FILENAME})";
+            sed -i -e "s|^#\?${VAR} \?.*\$|$VAR $VAL|" ${SSHD_CONFDIR}/sshd_config;
+            echo "[env-to-conf] set ${VAR}=${VAL} from ${BASENAME}";
+        fi;
+    done;
+fi;
+
+# set root password if required (unset otherwise)
+if [ -n "${S6_ROOTPASS}" ];
+then
+    echo "SSHd Updating root password";
+    echo  "root:${S6_ROOTPASS}" | chpasswd;
+
+    # enable root login if needed
+    echo "Enabling PermitRootLogin."
+    sed -i \
+        -Ee 's_^#?PermitRootLogin .*$_PermitRootLogin yes_g' \
+        ${SSHD_CONFDIR}/sshd_config;
+fi;
+
+if [ -n "${S6_USER}" ] && [ "${S6_USER}" != "root" ]; # unset this to disable the following block
+then
+    # set user shell
+    usermod -s ${S6_USERSHELL:-/bin/bash} ${S6_USER};
+    S6_USERHOME="$(getent passwd ${S6_USER} | cut -d: -f6)";
+
+    mkdir -p ${S6_USERHOME}/.ssh;
+    chown ${S6_USER}:${S6_USER} -R ${S6_USERHOME}/.ssh;
+    chmod 700 ${S6_USERHOME}/.ssh;
+
+    # ensure user keypair exists
+    [[ -f ${S6_USERHOME}/.ssh/id_rsa  ]] || (
+        echo "SSHd Generating user keys.";
+        s6-setuidgid ${S6_USER} ssh-keygen -t rsa -b 1024 -N "" -f ${S6_USERHOME}/.ssh/id_rsa;
+        s6-setuidgid ${S6_USER} chmod 600 ${S6_USERHOME}/.ssh/id_rsa;
+    );
+
+    # if no authorized keys file provided, ensure user key exists in it
+    [[ -f ${S6_USERHOME}/.ssh/authorized_keys  ]] || (
+        echo "SSHd Setting user authorized_keys.";
+        s6-setuidgid ${S6_USER} cp ${S6_USERHOME}/.ssh/id_rsa.pub ${S6_USERHOME}/.ssh/authorized_keys;
+    );
+fi;
+
+# enable password login if needed
+if [ -n "${S6_ROOTPASS}" ] \
+|| [ -n "${S6_USERPASS}" ];
+then
+    echo "Enabling PasswordAuthentication."
+    sed -i \
+        -Ee 's_^#?PasswordAuthentication .*$_PasswordAuthentication yes_g' \
+        ${SSHD_CONFDIR}/sshd_config;
+fi
