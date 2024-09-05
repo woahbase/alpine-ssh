@@ -6,5 +6,6 @@ SSHD_ARGS="${SSHD_ARGS:- -De}";
 
 exec \
     /usr/sbin/sshd \
+    -f ${SSHD_CONFDIR}/sshd_config \
     ${SSHD_ARGS} \
-    -f ${SSHD_CONFDIR}/sshd_config
+    ;
