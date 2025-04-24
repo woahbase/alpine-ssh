@@ -23,7 +23,8 @@ if [ ! -f "${SSHD_CONFDIR}/ssh_host_rsa_key"  ];
 then
     vecho "SSHd Generating host keys.";
     ssh-keygen -t rsa     -b 1024 -N "" -f ${SSHD_CONFDIR}/ssh_host_rsa_key;
-    ssh-keygen -t dsa     -b 1024 -N "" -f ${SSHD_CONFDIR}/ssh_host_dsa_key;
+    # openssh deprecated the default dsa key generation on 9.9
+    # ssh-keygen -t dsa     -b 1024 -N "" -f ${SSHD_CONFDIR}/ssh_host_dsa_key;
     ssh-keygen -t ecdsa   -b 521  -N "" -f ${SSHD_CONFDIR}/ssh_host_ecdsa_key;
     ssh-keygen -t ed25519 -b 512  -N "" -f ${SSHD_CONFDIR}/ssh_host_ed25519_key;
 fi;
