@@ -19,7 +19,7 @@
 
 # Include configuration snippets before processing this file to allow the
 # snippets to override directives set in this file.
-Include /etc/ssh/ssh_config.d/*.conf
+Include SSHD_CONFDIR/ssh_config.d/*.conf
 
 # Host *
 #   ForwardAgent no
