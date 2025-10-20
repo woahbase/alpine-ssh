@@ -1,4 +1,4 @@
-#	$OpenBSD: sshd_config,v 1.104 2021/07/02 05:11:21 dtucker Exp $
+#	$OpenBSD: sshd_config,v 1.105 2024/12/03 14:12:47 dtucker Exp $
 
 # This is the sshd server system-wide configuration file.  See
 # sshd_config(5) for more information.
@@ -20,7 +20,6 @@ Port 22
 #ListenAddress ::
 
 HostKey SSHD_CONFDIR/ssh_host_rsa_key
-#HostKey SSHD_CONFDIR/ssh_host_dsa_key
 HostKey SSHD_CONFDIR/ssh_host_ecdsa_key
 HostKey SSHD_CONFDIR/ssh_host_ed25519_key
 
@@ -58,11 +57,13 @@ AuthorizedKeysFile	.ssh/authorized_keys
 # Don't read the user's ~/.rhosts and ~/.shosts files
 #IgnoreRhosts yes
 
-# To disable tunneled clear text passwords, change to no here!
+# To disable tunneled clear text passwords, change to "no" here!
 #PasswordAuthentication yes
 #PermitEmptyPasswords no
 
-# Change to no to disable s/key passwords
+# Change to "no" to disable keyboard-interactive authentication.  Depending on
+# the system's configuration, this may involve passwords, challenge-response,
+# one-time passwords or some combination of these and other methods.
 #KbdInteractiveAuthentication yes
 
 # Kerberos options
@@ -87,6 +88,7 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #UsePAM no
 
 #AllowAgentForwarding yes
+# Feel free to re-enable these if your use case requires them.
 #AllowTcpForwarding no
 #GatewayPorts no
 #X11Forwarding no
@@ -96,7 +98,6 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #PrintMotd yes
 #PrintLastLog yes
 #TCPKeepAlive yes
-#UseLogin no
 #PermitUserEnvironment no
 #Compression delayed
 #ClientAliveInterval 0
@@ -113,17 +114,6 @@ AuthorizedKeysFile	.ssh/authorized_keys
 
 # override default of no subsystems
 #Subsystem	sftp	/usr/lib/ssh/sftp-server
-
-# the following are HPN related configuration options
-# tcp receive buffer polling. disable in non autotuning kernels
-#TcpRcvBufPoll yes
-
-# disable hpn performance boosts
-#HPNDisabled no
-
-# buffer size for hpn to non-hpn connections
-#HPNBufferSize 2048
-
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs
